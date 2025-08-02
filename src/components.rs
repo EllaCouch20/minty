@@ -3,6 +3,7 @@
 use pelican_ui::Context;
 use crate::BITCOIN_PRICE;
 use crate::MintyContract;
+use crate::ContractType;
 
 use pelican_ui_std::{
     DataItem,
@@ -15,82 +16,127 @@ use pelican_ui_std::{
     Timestamp
 };
 
-use bitcoin::{NANS, format_usd, format_nano_btc};
+use bitcoin::{NANS, format_usd, format_nano_btc, format_address};
 
 pub struct DataItemMinty;
 
 impl DataItemMinty {
-    pub fn confirm_prediction(ctx: &mut Context, _prediction: f64, _dip: f64, 
-        to_edit_prediction: impl FnMut(&mut Context) + 'static,
-    ) -> DataItem {
-        let edit_prediction = Button::secondary(ctx, Some("edit"), "Edit Prediciton", None, to_edit_prediction, None);
+    pub fn confirm_prediction(ctx: &mut Context, is_risky: bool, to_edit_prediction: Option<usize>) -> DataItem {
+        let edit_prediction = to_edit_prediction.map(|i| vec![
+            Button::secondary(ctx, Some("edit"), "Edit Prediciton", None, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(i)), None)
+        ]);
+        
         let contract = ctx.state().get::<MintyContract>().expect("No contract");
-        let subtitle = format!("You will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(contract.expected_amt));
-        DataItem::new(ctx, None, "Expected outcome", Some(&subtitle), None, None, Some(vec![edit_prediction]))
-    }
-
-    pub fn contract_terms(ctx: &mut Context, is_risky: bool,
-        to_edit_protection: impl FnMut(&mut Context) + 'static,
-        to_edit_deposit: impl FnMut(&mut Context) + 'static,
-    ) -> DataItem {
-        let edit_protection = Button::secondary(ctx, Some("edit"), "Edit Withdraw", None, to_edit_protection, None);
-        let edit_deposit = Button::secondary(ctx, Some("edit"), "Edit Deposit", None, to_edit_deposit, None);
-
-        let contract = ctx.state().get::<MintyContract>().expect("No contract");
-
-        let deposit = contract.deposited;//12_478.00;
-        let usd_prediction = contract.prediction; //118_002.44;
-        let btc_minimum = contract.minimum; //20_384.19; // insured price
-        // let withdraw = contract.withdraw; //20_383.18;
-        // let usd_deposit = (contract.deposited/NANS)*BITCOIN_PRICE;
-
-        let withdraw = (contract.expected_amt / usd_prediction)*NANS; // risky
-
-        let fmt_deposit = format_nano_btc((deposit / BITCOIN_PRICE)*NANS);
-        // let fmt_prediction = format_usd(_prediction);
-        let fmt_minimum = format_usd(btc_minimum);
-        let fmt_withdraw = format_nano_btc(withdraw);
-        // let fmt_usd_deposit = format_usd(usd_deposit);
-
-        let percentage = 20;
-
-        let details = if is_risky {
-            let a = format!("Today, I will deposit {}.", fmt_deposit);
-            let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {}.", format_usd(BITCOIN_PRICE), fmt_withdraw);
-            // let c = format!("In 5 years, if Bitcoin is below {}, I will absorb 100% of the counterparty losses.", fmt_prediction);
-            let c = format!("In 5 years, if Bitcoin is below {}, I will lose my deposit.", format_usd(BITCOIN_PRICE));
-            format!("{}\n\n{}\n\n{}", a, b, c)
-        } else {
-            let a = format!("Today, I will deposit {}.", fmt_deposit);
-            let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {}.", format_usd(BITCOIN_PRICE), fmt_withdraw);
-            let c = format!("In 5 years, if Bitcoin is below {}, my counterparty will absorb 100% of the losses, and I will withdraw {} worth of Bitcoin.", format_usd(BITCOIN_PRICE), format_usd(contract.deposited));
-            let d = format!("In 5 years, if Bitcoin is below {}, I will lose my deposit.", fmt_minimum);
-            format!("{}\n\n{}\n\n{}\n\n{}", a, b, c, d)
+        let multiple = contract.prediction / BITCOIN_PRICE;
+        let subtitle = match is_risky {
+            true => {
+                match contract.variant {
+                    ContractType::AdditonalReturn285 => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.85)*contract.deposited))
+                    },
+                    ContractType::AdditonalReturn270 => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.7)*contract.deposited))
+                    },
+                    ContractType::AdditonalReturn30 => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.3)*contract.deposited))
+                    },
+                    _ => "".to_string(),
+                }
+            },
+            false => {
+                match contract.variant {
+                    ContractType::GuaranteedReturn15 => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(contract.deposited*2.0))
+                    },
+                    ContractType::TodaysPriceGuaranteed => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.3)*contract.deposited))
+                    },
+                    ContractType::TodaysPriceGuaranteed50 => {
+                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.7)*contract.deposited))
+                    },
+                    _ => "".to_string(),
+                }
+            }
         };
 
-        // let subtitle = format!("{}\n\n{}\n\n{}\n\n{}", details.0, details.1, details.2, details.3);
-        DataItem::new(ctx, None, "Contract terms", Some(&details), None, None, Some(vec![edit_protection, edit_deposit]))
+        DataItem::new(ctx, None, "Expected outcome", Some(&subtitle), None, None, edit_prediction)
     }
 
-    pub fn view_prediction(ctx: &mut Context, _prediction: f64, _dip: f64) -> DataItem {
-        let subtitle = format!("You will get {}", format_usd(500000.00));
-        let desc = format!("Assuming the bitcoin price is {} in 5 years.", format_usd(200000.00));
+    pub fn contract_terms(ctx: &mut Context, is_risky: bool, to_edit: Option<(usize, usize)>) -> DataItem {
+        let edits = to_edit.map(|(a, b)| vec![
+            Button::secondary(ctx, Some("edit"), "Edit Withdraw", None, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(a)), None),
+            Button::secondary(ctx, Some("edit"), "Edit Deposit", None, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(b)), None)
+        ]);
 
-        DataItem::new(ctx, None, "Expected withdraw", Some(&subtitle), Some(&desc), None, None)
+        let contract = ctx.state().get::<MintyContract>().expect("No contract");
+
+        let details = match is_risky {
+            true => {
+                match contract.variant {
+                    // ContractType::AdditonalReturn285 => {
+                    //     let a = format!("Today, I will deposit {:.8} BTC", deposit / BITCOIN_PRICE);
+                    //     let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {} minus {} worth of Bitcoin.", 
+                    //         format_usd(BITCOIN_PRICE/3.0), format_usd(contract.prediction), format_usd(contract.prediction), 
+                    //     );
+                    //     format!("{a}\n\n{b}\n\n{c}")
+                    // },
+                    _ => "".to_string(),
+                }
+            },
+            false => {
+                match contract.variant {
+                    ContractType::GuaranteedReturn15 => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is below {}, my counterparty will absorb 100% of the losses, and I will withdraw {} worth of Bitcoin.", format_usd(BITCOIN_PRICE), format_usd(contract.deposited*2.0));
+                        let c = format!("In 5 years, if Bitcoin is below {}, I will withdraw {:.8} BTC, but I will incure a loss.", format_usd(BITCOIN_PRICE/3.0), ((contract.deposited * 3.0) * 0.95) / BITCOIN_PRICE);
+                        format!("{a}\n\n{b}\n\n{c}")
+                    },
+                    ContractType::TodaysPriceGuaranteed => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {:.8} BTC", format_usd(BITCOIN_PRICE), (contract.deposited*1.3) / BITCOIN_PRICE);
+                        let c = format!("In 5 years, if Bitcoin is below {}, my counterparty will absorb 100% of the losses, and I will withdraw {} worth of Bitcoin.", format_usd(BITCOIN_PRICE), format_usd(contract.deposited));
+                        let d = format!("In 5 years, if Bitcoin is below {}, I will withdraw {:.8} BTC, but I will incure a loss.", format_usd(BITCOIN_PRICE/3.0), ((contract.deposited * 3.0) * 0.95) / BITCOIN_PRICE);
+                        format!("{a}\n\n{b}\n\n{c}\n\n{d}")
+                    },
+                    ContractType::TodaysPriceGuaranteed50 => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {:.8} BTC", format_usd(BITCOIN_PRICE), (contract.deposited*1.7) / BITCOIN_PRICE);
+                        let c = format!("In 5 years, if Bitcoin is between {} and {}, I will get {:.8} BTC back.", format_usd(BITCOIN_PRICE), format_usd(BITCOIN_PRICE/2.0), contract.deposited / BITCOIN_PRICE);
+                        let d = format!("In 5 years, if Bitcoin is below {}, I will withdraw {:.8} BTC, but I will incure a loss.", format_usd(BITCOIN_PRICE/3.0), ((contract.deposited * 3.0) * 0.95) / BITCOIN_PRICE);
+                        format!("{a}\n\n{b}\n\n{c}\n\n{d}")
+                    },
+                    _ => "".to_string(),
+                }
+            }
+        };
+        
+        DataItem::new(ctx, None, "Contract terms", Some(&details), None, None, edits)
     }
 
-    pub fn view_deposit(
-        ctx: &mut Context, price: f64, deposit: f64, _prediction: f64,
-    ) -> DataItem {
-        let deposit_usd = &format_usd(price*deposit);
-        let deposit_nano = &format_nano_btc(deposit*NANS);
+    pub fn contract_details(ctx: &mut Context, contract: &MintyContract) -> DataItem {
+        let timestamp = Timestamp::new(contract.timestamp.into());
+        let (date, time) = (timestamp.date(), timestamp.time());
+        // let nano_btc = &format_nano_btc(btc * NANS);
+        // let usd = &format_usd(btc*price);
+        let price = format_usd(BITCOIN_PRICE);
+        let address = format_address(contract.address.clone());
+        let withdraw = (contract.expected_amt / contract.prediction)*NANS;
+
+        let deposit = format_nano_btc((contract.deposited / BITCOIN_PRICE)*NANS);
+        let withdraw = format_nano_btc(withdraw);
+        let deposit_usd = format_usd(contract.deposited);
 
         let details: Vec<(&str, &str)> = vec![
-            ("Amount to deposit", deposit_usd),
-            ("Amount to deposit (nb)", deposit_nano),
+            ("Date", &date),
+            ("Time", &time),
+            ("Amount deposited", &deposit_usd),
+            ("Amount deposited (nb)", &deposit),
+            ("Amount to withdraw (5 years)", &withdraw),
+            ("Bitcoin price", &price),
+            ("Redeposit address", &address),
         ];
 
-        DataItem::new(ctx, None, "Bitcoin deposit", None, None, Some(details), None)
+        DataItem::new(ctx, None, "Contract details", None, None, Some(details), None)
     }
 }
 
@@ -101,20 +147,21 @@ impl ListItemMinty {
         let deposit = format!("Deposit required: {}", format_usd(deposit));
 
         ListItem::new(
-            ctx, true, &prediction, None, Some(&deposit), None, None, None, None, 
-            Some(AvatarContent::Icon("brand", AvatarIconStyle::Brand)), None, 
-            move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(i))
+            ctx, true, &prediction, None, Some(&deposit), None, None, None, None,
+            Some(AvatarContent::Icon("brand", AvatarIconStyle::Brand)), None,
+            true, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(i))
         )
     }
 
-    pub fn contract(ctx: &mut Context, prediction: f64, date: Timestamp, i: usize) -> ListItem {
+    pub fn contract(ctx: &mut Context, prediction: f64, pending: bool, next: impl FnMut(&mut Context) + 'static) -> ListItem {
         let prediction = format_usd(prediction);
         // let deposit = format!("Deposit required: {}", format_usd(deposit));
+        let color = ctx.theme.colors.text.heading;
+        let title = if pending {"Pending Contract"} else {"Open Contract"};
+        let flair = pending.then_some(("warning", color));
         ListItem::new(
-            ctx, true, "Minty Contract", None, Some(&date.friendly()), 
-            None, Some(&prediction), Some("Details"), None,
-            Some(AvatarContent::Icon("brand", AvatarIconStyle::Brand)), None,
-            move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(i))
+            ctx, true, title, flair, Some(&prediction), None, None, None, None,
+            Some(AvatarContent::Icon("brand", AvatarIconStyle::Brand)), None, true, next
         )
     }
 }

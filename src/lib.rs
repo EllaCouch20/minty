@@ -10,14 +10,38 @@ use profiles::components::AvatarContentProfiles;
 use pelican_ui::ColorResources;
 use pelican_ui::theme::{IllustrationColors, ButtonColorScheme, ButtonColors, BrandColor, TextColor, OutlineColor, BackgroundColor, ShadesColor, StatusColor};
 use std::collections::HashMap;
-use messages::service::{Rooms};
+// use messages::service::{Rooms};
 
-mod pages;
-use pages::*;
+use maverick_os::ApplicationSupport;
+
+// use serde::{Deserialize, Serialize};
+use std::{
+    fs,
+    fs::File,
+    io::{BufReader, Write},
+    path::Path,
+};
+use tempfile::NamedTempFile;
+
+pub mod pages;
+pub use pages::*;
 mod components;
-use components::*;
 mod state;
 use state::*;
+
+mod plugin;
+use plugin::MintyPlugin;
+mod service;
+use service::MintyService;
+
+use pelican_ui_std::AppPage;
+use profiles::pages::Account;
+
+pub const BITCOIN_PRICE: f64 = 118_000.00;
+
+// use bitcoin::components::IconButtonBitcoin;
+// use messages::components::IconButtonMessages;
+// use profiles::components::IconButtonProfiles;
 
 // mod bdk;
 // use bdk::BDKPlugin;
@@ -30,13 +54,14 @@ impl Services for MyApp {
     fn services() -> ServiceList {
         let mut services = ServiceList::default();
         services.insert::<ProfileService>();
+        services.insert::<MintyService>();
         services
     }
 }
 
 impl Plugins for MyApp {
     fn plugins(ctx: &mut Context) -> Vec<Box<dyn Plugin>> {
-        vec![Box::new(ProfilePlugin::new(ctx))]
+        vec![Box::new(ProfilePlugin::new(ctx)), Box::new(MintyPlugin::new(ctx))]
     }
 }
 
@@ -53,21 +78,49 @@ impl App {
     pub fn new(ctx: &mut Context) -> Box<Self> {
         // let account_actions = Rc::new(RefCell::new(vec![IconButtonBitcoin::new(ctx), IconButtonMessages::new(ctx), IconButtonProfiles::block(ctx)]));
         // let messages_actions = account_actions.clone();
-        // let navigation = vec![
-        //     ("wallet", "Bitcoin".to_string(), None, Some(Box::new(|ctx: &mut Context| Box::new(BitcoinHome::new(ctx)) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>)),
-        //     ("messages", "Messages".to_string(), None, Some(Box::new(move |ctx: &mut Context| Box::new(MessagesHome::new(ctx, messages_actions.clone())) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>)),
-        //     ("door", "Rooms".to_string(), None, Some(Box::new(move |ctx: &mut Context| Box::new(RoomsHome::new(ctx, account_actions.clone())) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>)),
-        // ];
+        let navigation = vec![
+            ("home", "Home".to_string(), None, Some(Box::new(|ctx: &mut Context| Box::new(MintyTerms::new(ctx)) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>)),
+        ];
 
-        // let navigation_b = vec![
-        //     ("profile", "My Account".to_string(), Some(AvatarContentProfiles::default()), Some(Box::new(|ctx: &mut Context| Box::new(Account::new(ctx)) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>))
-        // ];
+        let navigation_b = vec![
+            ("profile", "My Account".to_string(), Some(AvatarContentProfiles::default()), Some(Box::new(|ctx: &mut Context| Box::new(Account::new(ctx)) as Box<dyn AppPage>) as Box<dyn FnMut(&mut Context) -> Box<dyn AppPage>>))
+        ];
 
+        let storage_path = ApplicationSupport::get().unwrap();
+        fs::create_dir_all(&storage_path).unwrap();
+        let path = storage_path.join("contracts.json");
+        let _ = fs::remove_file(&path);
+        File::create(&path).unwrap();
+        // let mut contracts = Self::load_contracts(&path);
+ 
         ctx.state().set(MyContracts(Vec::new()));
         Self::theme(ctx);
         let home = MintyTerms::new(ctx);
-        let interface = Interface::new(ctx, Box::new(home), None);
+        let interface = Interface::new(ctx, Box::new(home), Some((0_usize, navigation, navigation_b)), None);
         Box::new(App(Stack::default(), interface))
+    }
+
+    pub fn save_contracts<P: AsRef<Path>>(path: P, contracts: &Vec<MintyContract>) {
+        let path = path.as_ref();
+        let bytes = serde_json::to_vec_pretty(contracts).expect("Could not vec to pretty");
+
+        let mut tmp = NamedTempFile::new_in(path.parent().unwrap_or_else(|| Path::new("."))).expect("Could not write temp");
+        tmp.write_all(&bytes).expect("Could not write all");
+        tmp.flush().expect("Could not flush");
+        tmp.persist(path).expect("Colud not persist");
+    }
+
+       // contracts.push(Contract { id: 1, name: "Foo".into(), terms: "Bar".into() });
+        // save_contracts(&path, &contracts).unwrap();
+
+    pub fn load_contracts<P: AsRef<Path>>(path: P) -> Vec<MintyContract> {
+        let path = path.as_ref();
+        if !path.exists() {
+            return Vec::new();
+        }
+        let file = File::open(path).expect("Could not open path");
+        let reader = BufReader::new(file);
+        serde_json::from_reader(reader).expect("Could not read from reader")
     }
 
     pub fn theme(ctx: &mut Context) {
@@ -78,13 +131,14 @@ impl App {
         theme.brand.set_logomark(ctx, "brand/logo.svg");
         theme.brand.set_app_icon(ctx, "brand/app_icon.svg");
         theme.brand.set_wordmark(ctx, "brand/wordmark.svg");
+        theme.brand.set_error(ctx, "brand/wordmark.svg");
 
         theme.icons.insert(ctx, "brand");
 
         theme.colors = ColorResources::new(
             BackgroundColor {
                 primary: Color::from_hex("FFFFFF", 255),
-                secondary: Color::from_hex("E6E6E6", 255),
+                secondary: Color::from_hex("B5B5B5", 255),
             },
             OutlineColor {
                 primary: Color::from_hex("78716C", 255),
@@ -98,7 +152,7 @@ impl App {
             TextColor {
                 heading: Color::from_hex("000000", 255),
                 primary: Color::from_hex("323232", 255),
-                secondary: Color::from_hex("6A6969", 255),
+                secondary: Color::from_hex("2d2d2d", 255),
             },
             BrandColor {
                 primary: Color::from_hex("6DD495", 255),
@@ -174,14 +228,14 @@ impl App {
                     outline: Color::from_hex("FFFFFF", 255),
                 },
                 ghost_selected: ButtonColorScheme {
-                    background: Color::from_hex("D8D8D8", 255),
-                    label: Color::from_hex("000000", 255),
-                    outline: Color::from_hex("FFFFFF", 0),
+                    background: Color::from_hex("262322", 255),
+                    label: Color::from_hex("FFFFFF", 255),
+                    outline: Color::from_hex("FFFFFF", 255),
                 },
                 ghost_pressed: ButtonColorScheme {
-                    background: Color::from_hex("D8D8D8", 255),
-                    label: Color::from_hex("000000", 255),
-                    outline: Color::from_hex("FFFFFF", 0),
+                    background: Color::from_hex("262322", 255),
+                    label: Color::from_hex("FFFFFF", 255),
+                    outline: Color::from_hex("FFFFFF", 255),
                 },
             },
             IllustrationColors {
@@ -196,13 +250,11 @@ impl App {
 impl OnEvent for App {
     fn on_event(&mut self, ctx: &mut Context, event: &mut dyn Event) -> bool {
         if let Some(TickEvent) = event.downcast_ref::<TickEvent>() {
-            let rooms = &ctx.state().get_or_default::<Rooms>().0;
-            let any_unread = rooms.iter().any(|r| r.1.2.iter().any(|m| !m.is_read()));
-            if let Some(mobile) = self.1.mobile() {
-                if let Some(n) = mobile.navigator().as_mut() { n.inner().buttons()[1].show_flair(any_unread); }
-            } else if let Some(desktop) = self.1.desktop() {
-                if let Some(n) = desktop.navigator().as_mut() { n.buttons()[1].show_flair_left(any_unread); }
-            }
+            // let contracts = ctx.state().get::<MyContracts>().unwrap().0.clone();
+            // let storage_path = ApplicationSupport::get().unwrap();
+            // std::fs::create_dir_all(&storage_path).unwrap();
+            // let path = storage_path.join("contracts.json");
+            // Self::save_contracts(&path, &contracts);
 
             if ctx.state().get::<Name>().is_some() {
                 self.1.desktop().as_mut().map(|d| d.navigator().as_mut().map(|nav| {
