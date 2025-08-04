@@ -38,9 +38,8 @@ impl AppPage for MintyHome {
     fn has_nav(&self) -> bool { true }
     fn navigate(self: Box<Self>, ctx: &mut Context, index: usize) -> Result<Box<dyn AppPage>, Box<dyn AppPage>> { 
         match index {
-            0 => Ok(Box::new(ContractDetails::new(ctx, self.2.unwrap()))),
-            1 => Ok(Box::new(BitcoinDeposit::new(ctx, false))),
-            2 => Ok(Box::new(BitcoinDeposit::new(ctx, true))),
+            0 => Ok(Box::new(ContractDetails::new(ctx))),
+            1 => Ok(Box::new(BitcoinDeposit::new(ctx))),
             _ => Err(self)
         }
     }
@@ -48,14 +47,10 @@ impl AppPage for MintyHome {
 
 impl MintyHome {
     pub fn new(ctx: &mut Context) -> Self {
-        // let text_size = ctx.theme.fonts.size.sm;
-
-        // let text = "No existing contracts matched.\nSelect a different contract below or publish your offer.";
-        // let text = ExpandableText::new(ctx, text, TextStyle::Primary, text_size, Align::Center, None);
-
         let amount = ctx.state().get::<MyContracts>().map(|con| con.0.iter().map(|c| c.expected_amt).sum::<f64>().max(0.0)).unwrap_or(0.0);
         let amount = if amount == 0.0 {"$0.00".to_string()} else {format_usd(amount)};
         let display = AmountDisplay::new(ctx, &amount, "Expected contracts value");
+
         let mut content: Vec<Box<dyn Drawable>> = vec![Box::new(display)];
         let mut offset = Offset::Center;
 
@@ -73,14 +68,18 @@ impl MintyHome {
             }
         }
 
-        // let button = Button::primary(ctx, "Make Prediction", |ctx: &mut Context| {
-        //     ctx.state().set(MintyContract::empty());
-        //     ctx.trigger_event(NavigateEvent(1));
-        // });
-
         ctx.state().set(MintyContract::empty());
-        let reduced = Button::primary(ctx, "Reduce Risk", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
-        let added = Button::primary(ctx, "Add Return", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(2)));
+
+        let reduced = Button::primary(ctx, "Reduce Risk", |ctx: &mut Context| {
+            ctx.trigger_event(NavigateEvent(1));
+            ctx.state().get_mut_or_default::<MintyContract>().is_risky = false;
+        });
+
+        let added = Button::primary(ctx, "Add Return", |ctx: &mut Context| {
+            ctx.trigger_event(NavigateEvent(1));
+            ctx.state().get_mut_or_default::<MintyContract>().is_risky = true;
+        });
+
         let bumper = Bumper::double_button(ctx, reduced, added);
         let content = Content::new(offset, content);
         let header = Header::home(ctx, "Minty", None);

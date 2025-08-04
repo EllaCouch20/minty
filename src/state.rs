@@ -17,6 +17,10 @@ pub struct MintyContract {
     pub address: String,
     pub accepted: bool,
     pub variant: ContractType,
+    pub is_risky: bool,
+    pub self_published: bool,
+    pub matched_with: Option<Box<MintyContract>>,
+    pub accepted_contract: Option<Box<MintyContract>>,
 }
 
 impl MintyContract {
@@ -31,6 +35,10 @@ impl MintyContract {
             address: String::new(),
             accepted: false,
             variant: ContractType::Unknown,
+            is_risky: false,
+            self_published: false,
+            matched_with: None,
+            accepted_contract: None,
         }
     }
 }

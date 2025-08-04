@@ -21,21 +21,21 @@ use crate::{
 use bitcoin::components::{AmountInput, NumericKeypad};
 
 #[derive(Debug, Component)]
-pub struct BitcoinDeposit(Stack, Page, #[skip] bool, #[skip] ButtonState);
+pub struct BitcoinDeposit(Stack, Page, #[skip] ButtonState);
 
 impl AppPage for BitcoinDeposit {
     fn has_nav(&self) -> bool { false }
     fn navigate(self: Box<Self>, ctx: &mut Context, index: usize) -> Result<Box<dyn AppPage>, Box<dyn AppPage>> { 
         match index {
             0 => Ok(Box::new(MintyHome::new(ctx))),
-            1 => Ok(Box::new(SelectContract::new(ctx, self.2))),
+            1 => Ok(Box::new(SelectContract::new(ctx))),
             _ => Err(self)
         }
     }
 }
 
 impl BitcoinDeposit {
-    pub fn new(ctx: &mut Context, is_risky: bool) -> Self {
+    pub fn new(ctx: &mut Context) -> Self {
         let msg = if IS_MOBILE {"Enter amount of bitcoin you will deposit."} else {"Type the amount of bitcoin you will deposit."};
 
         let deposit = ctx.state().get_mut::<MintyContract>().map(|c| c.deposited).unwrap_or(0.0);
@@ -53,7 +53,7 @@ impl BitcoinDeposit {
         let button = Button::primary(ctx, "Continue", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
         // let add_risk = Button::primary(ctx, "Add Risk", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
         let bumper = Bumper::single_button(ctx, button);
-        BitcoinDeposit(Stack::default(), Page::new(Some(header), content, Some(bumper)), is_risky, ButtonState::Default)
+        BitcoinDeposit(Stack::default(), Page::new(Some(header), content, Some(bumper)), ButtonState::Default)
     }
 }
 
@@ -67,7 +67,7 @@ impl OnEvent for BitcoinDeposit {
             // println!("Set to {}", ctx.state().get_mut::<MintyContract>().unwrap().deposit);
             let error = *amount.error();
             let button = &mut self.1.bumper().as_mut().unwrap().find::<Button>().unwrap();
-            button.update_state(ctx, error, !error, &mut self.3);
+            button.update_state(ctx, error, !error, &mut self.2);
         }
         true
     }

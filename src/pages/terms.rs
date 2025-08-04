@@ -15,7 +15,6 @@ use crate::MintyHome;
 
 #[derive(Debug, Component)]
 pub struct MintyTerms(Stack, Page);
-
 impl OnEvent for MintyTerms {}
 
 impl AppPage for MintyTerms {

@@ -1,11 +1,11 @@
 [package]
-name = "orange"
+name = "minty"
 version = "0.1.0"
 edition = "2021"
 description = "nOrange"
 license = "BSD-3-Clause"
-repository = "https://github.com/CalebCouch/orangeme.git"
-authors = ["Caleb Couch <caleb@orange.me>", "Ella Couch <ella@orange.me>"]
+repository = "https://github.com/EllaCouch20/minty.git"
+authors = ["Ella Couch <ella@orange.me>"]
 
 
 [dependencies]

@@ -12,7 +12,7 @@ use pelican_ui_std::{
     IS_MOBILE
 };
 
-use crate::{ MintyContract, BitcoinDeposit, MintyHome };
+use crate::{ MintyContract, ConfirmContract, };
 use bitcoin::components::{AmountInput, NumericKeypad};
 
 #[derive(Debug, Component)]
@@ -21,9 +21,9 @@ impl AppPage for BitcoinPrediction {
     fn has_nav(&self) -> bool { false }
     fn navigate(self: Box<Self>, ctx: &mut Context, index: usize) -> Result<Box<dyn AppPage>, Box<dyn AppPage>> { 
         match index {
-            0 => Ok(Box::new(MintyHome::new(ctx))),
-            1 => Ok(Box::new(BitcoinDeposit::new(ctx, false))),
-            2 => Ok(Box::new(BitcoinDeposit::new(ctx, true))),
+            0 => Ok(Box::new(ConfirmContract::new(ctx))),
+            // 1 => Ok(Box::new(BitcoinDeposit::new(ctx, false))),
+            // 2 => Ok(Box::new(BitcoinDeposit::new(ctx, true))),
             _ => Err(self)
         }
     }
@@ -47,9 +47,8 @@ impl BitcoinPrediction {
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Bitcoin prediction", None);
 
-        let reduced = Button::primary(ctx, "Reduce Risk", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
-        let added = Button::primary(ctx, "Add Risk", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(2)));
-        let bumper = Bumper::double_button(ctx, reduced, added);
+        let done = Button::primary(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
+        let bumper = Bumper::single_button(ctx, done);
         BitcoinPrediction(Stack::default(), Page::new(Some(header), content, Some(bumper)), ButtonState::Default)
     }
 }
@@ -64,9 +63,7 @@ impl OnEvent for BitcoinPrediction {
             ctx.state().get_mut::<MintyContract>().unwrap().prediction = usd; //(*amount.btc()*BITCOIN_PRICE)/NANS; // usd amount
             // println!("Set to {}", ctx.state().get_mut::<MintyContract>().unwrap().prediction);
             let error = *amount.error();
-            let button = &mut self.1.bumper().as_mut().unwrap().find_at::<Button>(0).unwrap();
-            button.update_state(ctx, error, !error, &mut self.2);
-            let button = &mut self.1.bumper().as_mut().unwrap().find_at::<Button>(1).unwrap();
+            let button = &mut self.1.bumper().as_mut().unwrap().find::<Button>().unwrap();
             button.update_state(ctx, error, !error, &mut self.2);
         }
         true

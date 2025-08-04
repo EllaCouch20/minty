@@ -20,24 +20,24 @@ use crate::{
 use crate::service::MintyRequest;
 
 #[derive(Debug, Component)]
-pub struct QRCodeDeposit(Stack, Page, #[skip] bool, #[skip] bool, #[skip] bool, #[skip] MintyContract);
+pub struct QRCodeDeposit(Stack, Page);
 impl OnEvent for QRCodeDeposit {}
 
 impl AppPage for QRCodeDeposit {
     fn has_nav(&self) -> bool { false }
     fn navigate(self: Box<Self>, ctx: &mut Context, index: usize) -> Result<Box<dyn AppPage>, Box<dyn AppPage>> {
         match index {
-            0 => Ok(Box::new(RedepositAddress::new(ctx, None, self.2, self.3, self.4, self.5))),
-            1 => Ok(Box::new(Success::new(ctx, self.3, self.5))),
+            0 => Ok(Box::new(RedepositAddress::new(ctx))),
+            1 => Ok(Box::new(Success::new(ctx))),
             _ => Err(self)
         }
     }
 }
 
 impl QRCodeDeposit {
-    pub fn new(ctx: &mut Context, is_risky: bool, is_mine: bool, was_match: bool, contract: MintyContract) -> Self {
+    pub fn new(ctx: &mut Context) -> Self {
         let text_size = ctx.theme.fonts.size.md;
-        let address = "Why are you even trying to deposit Bitcoin here??? Shameful.";
+        let address = "Why are you even trying to deposit Bitcoin here???";
 
         let qr_code = QRCode::new(ctx, address);
         let text = ExpandableText::new(ctx, "Scan to deposit bitcoin and accept this contract.", TextStyle::Secondary, text_size, Align::Center, None);
@@ -46,9 +46,11 @@ impl QRCodeDeposit {
         let close = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(close), "Deposit bitcoin", None);
 
+        let contract = ctx.state().get_or_default::<MintyContract>().clone();
+
         let contract_c = contract.clone();
         let button = Button::primary(ctx, "Skip", move |ctx: &mut Context| {
-            if is_mine {
+            if contract.matched_with.is_none() && contract.accepted_contract.is_none() {
                 let mut guard = ctx.get::<MintyPlugin>();
                 let (plugin, ctx) = guard.get();
                 let my_contract = ctx.state().get::<MintyContract>().unwrap();
@@ -65,6 +67,6 @@ impl QRCodeDeposit {
             }
         });
         let bumper = Bumper::single_button(ctx, button);
-        QRCodeDeposit(Stack::default(), Page::new(Some(header), content, Some(bumper)), is_risky, is_mine, was_match, contract)
+        QRCodeDeposit(Stack::default(), Page::new(Some(header), content, Some(bumper)))
     }
 }

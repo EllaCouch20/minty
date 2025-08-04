@@ -30,7 +30,8 @@ impl AppPage for ContractDetails {
 }
 
 impl ContractDetails {
-    pub fn new(ctx: &mut Context, contract: MintyContract) -> Self {
+    pub fn new(ctx: &mut Context) -> Self {
+        let contract = ctx.state().get_or_default::<MintyContract>().clone();
         let details = DataItemMinty::contract_details(ctx, &contract);
 
         let done = Button::secondary_expand(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0))); 

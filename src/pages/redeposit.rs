@@ -14,36 +14,31 @@ use pelican_ui_std::{
 
 use crate::{
     MintyContract, QRCodeDeposit, 
-    ViewContract, SimilarContracts
+    ViewMatchingContract, SimilarContracts
 };
 
 use crate::components::TextInputMinty;
 
 #[derive(Debug, Component)]
-pub struct RedepositAddress(Stack, Page, 
-    #[skip] ButtonState, 
-    #[skip] bool, // is risky offer
-    #[skip] bool, // is my own offer
-    #[skip] bool, // was a matching offer
-    #[skip] MintyContract,
-);
+pub struct RedepositAddress(Stack, Page, #[skip] ButtonState);
 
 impl AppPage for RedepositAddress {
     fn has_nav(&self) -> bool { false }
     fn navigate(self: Box<Self>, ctx: &mut Context, index: usize) -> Result<Box<dyn AppPage>, Box<dyn AppPage>> { 
         match index {
-            0 if !self.5 => Ok(Box::new(SimilarContracts::new(ctx, self.3, None))),
-            // 0 => Ok(Box::new(ConfirmContract::new(ctx, self.3))),
-            0 => Ok(Box::new(ViewContract::new(ctx, self.3, self.5, self.6))),
-            // 1 => Ok(Box::new(ContractAccepted::new(ctx, self.4))),
-            1 => Ok(Box::new(QRCodeDeposit::new(ctx, self.3, self.4, self.5, self.6))),
+            0 => Ok(Box::new(SimilarContracts::new(ctx))),
+            // 0 => {
+            //     let contract = ctx.state().get_or_default::<MintyContract>().clone();
+            //     Ok(Box::new(ViewMatchingContract::new(ctx)))
+            // },
+            1 => Ok(Box::new(QRCodeDeposit::new(ctx))),
             _ => Err(self)
         }
     }
 }
 
 impl RedepositAddress {
-    pub fn new(ctx: &mut Context, _address: Option<String>, is_risky: bool, is_mine: bool, was_match: bool, contract: MintyContract) -> Self {
+    pub fn new(ctx: &mut Context) -> Self {
         let button = Button::disabled(ctx, "Continue", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
         let input = TextInputMinty::address(ctx);
 
@@ -62,7 +57,7 @@ impl RedepositAddress {
         let bumper = Bumper::single_button(ctx, button);
         let content = Content::new(Offset::Start, vec![Box::new(input), Box::new(quick_actions)]);
 
-        RedepositAddress(Stack::default(), Page::new(Some(header), content, Some(bumper)), ButtonState::Default, is_risky, is_mine, was_match, contract)
+        RedepositAddress(Stack::default(), Page::new(Some(header), content, Some(bumper)), ButtonState::Default)
     }
 }
 

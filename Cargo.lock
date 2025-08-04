@@ -2402,6 +2402,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "minty"
+version = "0.1.0"
+dependencies = [
+ "bitcoin 0.1.0",
+ "chrono",
+ "include_dir",
+ "maverick_os",
+ "messages",
+ "pelican_ui",
+ "pelican_ui_std",
+ "profiles",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "mio"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3231,25 +3250,6 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "orange"
-version = "0.1.0"
-dependencies = [
- "bitcoin 0.1.0",
- "chrono",
- "include_dir",
- "maverick_os",
- "messages",
- "pelican_ui",
- "pelican_ui_std",
- "profiles",
- "serde",
- "serde_json",
- "tempfile",
- "tokio",
- "uuid",
 ]
 
 [[package]]
