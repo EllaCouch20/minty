@@ -101,7 +101,7 @@ impl DataItemMinty {
                     },
                     ContractType::OfCounterpartyReturn35 => {
                         let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
-                        let b = format!("In 5 years, if Bitcoin is above {:.8} I will withdraw {}.", 
+                        let b = format!("In 5 years, if Bitcoin is above {:.8} I will withdraw {:.8}.", 
                             format_usd(BITCOIN_PRICE), cvals.contract_after_fees / BITCOIN_PRICE
                         );
                         let c = format!("In 5 years, if Bitcoin is between {} and {}, I will withdraw {:.8}.", 

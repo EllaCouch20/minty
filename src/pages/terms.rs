@@ -31,10 +31,10 @@ impl MintyTerms {
     pub fn new(ctx: &mut Context) -> Self {
         let text_size = ctx.theme.fonts.size.lg;
 
-        let bullet1 = ExpandableText::new(ctx, "Minty is an open source browser for smart contracts on the Liquid blockchain.", TextStyle::Primary, text_size, Align::Center, None);
-        let bullet2 = ExpandableText::new(ctx, "Minty uses your expected bitcoin price to make the contract terms easier to view. Be sure to update it.", TextStyle::Primary, text_size, Align::Center, None);
-        let bullet3 = ExpandableText::new(ctx, "Minty never has control of your money - you’ll use bitcoin wallet to make deposits and receive payments from Liquid.", TextStyle::Primary, text_size, Align::Center, None);
-        let bullet4 = ExpandableText::new(ctx, "Anyone can make or accept a contract on Liquid and the terms and payments are enforced by Liquid.", TextStyle::Primary, text_size, Align::Center, None);
+        let bullet1 = ExpandableText::new(ctx, "Minty is an open source browser for smart contracts on the Liquid blockchain.", TextStyle::Primary, text_size, Align::Left, None);
+        let bullet2 = ExpandableText::new(ctx, "Minty uses your expected bitcoin price to make the contract terms easier to view. Be sure to update it.", TextStyle::Primary, text_size, Align::Left, None);
+        let bullet3 = ExpandableText::new(ctx, "Minty never has control of your money - you’ll use bitcoin wallet to make deposits and receive payments from Liquid.", TextStyle::Primary, text_size, Align::Left, None);
+        let bullet4 = ExpandableText::new(ctx, "Anyone can make or accept a contract on Liquid and the terms and payments are enforced by Liquid.", TextStyle::Primary, text_size, Align::Left, None);
 
         let wordmark = ctx.theme.brand.wordmark.clone();
         let wordmark = AspectRatioImage::new(wordmark, (200.0, 50.0));
