@@ -50,9 +50,9 @@ impl ViewMatchingContract {
             ctx.trigger_event(NavigateEvent(1));
         });
 
-        let reject = Button::secondary_expand(ctx, "Reject", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(2))); 
+        let reject = Button::close(ctx, "Reject", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(2))); 
         let bumper = Bumper::double_button(ctx, reject, accept);
-        let content = Content::new(Offset::Start, vec![Box::new(text), Box::new(prediction), Box::new(deposit)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(text), Box::new(prediction), Box::new(deposit)]);
 
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Matching contract", None);
@@ -90,7 +90,7 @@ impl ViewSimilarContract {
         });
 
         let bumper = Bumper::single_button(ctx, accept);
-        let content = Content::new(Offset::Start, vec![Box::new(prediction), Box::new(deposit)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(prediction), Box::new(deposit)]);
 
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Matching contract", None);

@@ -45,9 +45,9 @@ impl Success {
         };
 
         let text = ExpandableText::new(ctx, &subtext, TextStyle::Heading, text_size, Align::Center, None);
-        let done = Button::secondary_expand(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
+        let done = Button::close(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let bumper = Bumper::single_button(ctx, done);
-        let content = Content::new(Offset::Center, vec![Box::new(icon), Box::new(text)]);
+        let content = Content::new(ctx, Offset::Center, vec![Box::new(icon), Box::new(text)]);
         let close = IconButton::close(ctx, |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(close), title, None);
         Success(Stack::default(), Page::new(Some(header), content, Some(bumper)))

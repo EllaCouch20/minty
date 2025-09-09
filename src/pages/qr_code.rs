@@ -41,7 +41,7 @@ impl QRCodeDeposit {
 
         let qr_code = QRCode::new(ctx, address);
         let text = ExpandableText::new(ctx, "Scan to deposit bitcoin and accept this contract.", TextStyle::Secondary, text_size, Align::Center, None);
-        let content = Content::new(Offset::Center, vec![Box::new(qr_code), Box::new(text)]);
+        let content = Content::new(ctx, Offset::Center, vec![Box::new(qr_code), Box::new(text)]);
 
         let close = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(close), "Deposit bitcoin", None);

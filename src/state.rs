@@ -43,14 +43,14 @@ impl MintyContract {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
 pub enum ContractType {
     GuaranteedReturn15,
     TodaysPriceGuaranteed,
     TodaysPriceGuaranteed50,
-    AdditonalReturn285,
-    AdditonalReturn270,
-    AdditonalReturn30,
+    OfCounterpartyReturn100,
+    OfCounterpartyReturn75,
+    OfCounterpartyReturn35,
     #[default]
     Unknown
 }

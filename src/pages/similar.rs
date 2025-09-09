@@ -42,7 +42,7 @@ impl SimilarContracts {
         let button = Button::primary(ctx, "Publish My Offer", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
         
         let bumper = Bumper::single_button(ctx, button);
-        let content = Content::new(Offset::Start, vec![Box::new(text)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(text)]);
 
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Similar contracts", None);

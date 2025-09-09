@@ -8,7 +8,7 @@ use pelican_ui_std::{
     AppPage, NavigateEvent, 
     Button, Offset, Content,
     TextStyle, ExpandableText,
-    Brand
+    AspectRatioImage
 };
 
 use crate::MintyHome;
@@ -37,11 +37,11 @@ impl MintyTerms {
         let bullet4 = ExpandableText::new(ctx, "Anyone can make or accept a contract on Liquid and the terms and payments are enforced by Liquid.", TextStyle::Primary, text_size, Align::Center, None);
 
         let wordmark = ctx.theme.brand.wordmark.clone();
-        let wordmark = Brand::new(wordmark, (200.0, 50.0));
+        let wordmark = AspectRatioImage::new(wordmark, (200.0, 50.0));
        
-        let content = Content::new(Offset::Start, vec![Box::new(wordmark), Box::new(bullet1), Box::new(bullet2), Box::new(bullet3), Box::new(bullet4)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(wordmark), Box::new(bullet1), Box::new(bullet2), Box::new(bullet3), Box::new(bullet4)]);
 
-        let dismiss = Button::secondary_expand(ctx, "Hide Forever", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
+        let dismiss = Button::close(ctx, "Hide Forever", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let button = Button::primary(ctx, "Continue", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let bumper = Bumper::double_button(ctx, dismiss, button);
         MintyTerms(Stack::default(), Page::new(None, content, Some(bumper)))

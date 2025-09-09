@@ -63,7 +63,9 @@ dependencies = [
 
 [[package]]
 name = "air"
-version = "0.2.4"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fbef871b7806ed4d8d22b145e4b648d55004940eb3fa79af2bba0851bc04a7bb"
 dependencies = [
  "async-trait",
  "chrono",
@@ -330,7 +332,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e7e7c062f2229a767fe85062b8932352a7b8c1df586f91fae1017fd3dd281ef"
 dependencies = [
  "bdk_core",
- "bitcoin 0.32.6",
+ "bitcoin",
  "miniscript",
  "serde",
 ]
@@ -341,7 +343,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17698c25d2728afd6950d82069dce172147006f73960b9dc793a7e8dd7089016"
 dependencies = [
- "bitcoin 0.32.6",
+ "bitcoin",
  "hashbrown 0.14.5",
  "serde",
 ]
@@ -365,7 +367,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f278518ee6f2a17711fd4662dc34ce6153792a7a21575f05a9c8e2cb9ba36245"
 dependencies = [
  "bdk_chain",
- "bitcoin 0.32.6",
+ "bitcoin",
  "miniscript",
  "rand_core 0.6.4",
  "serde",
@@ -401,29 +403,9 @@ checksum = "dc827186963e592360843fb5ba4b973e145841266c1357f7180c43526f2e5b61"
 
 [[package]]
 name = "bitcoin"
-version = "0.1.0"
-dependencies = [
- "bdk_esplora",
- "bdk_wallet",
- "chrono",
- "image 0.25.6",
- "imageproc",
- "pelican_ui",
- "pelican_ui_std",
- "qrcode 0.14.1",
- "quircs",
- "reqwest",
- "secp256k1 0.31.0",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "bitcoin"
-version = "0.32.6"
+version = "0.32.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad8929a18b8e33ea6b3c09297b687baaa71fb1b97353243a3f1029fad5c59c5b"
+checksum = "0fda569d741b895131a88ee5589a467e73e9c4718e958ac9308e4f7dc44b6945"
 dependencies = [
  "base58ck",
  "base64 0.21.7",
@@ -972,11 +954,11 @@ checksum = "1c7a8fb8a9fbf66c1f703fe16184d10ca0ee9d23be5b4436400408ba54a95005"
 
 [[package]]
 name = "easy_secp256k1"
-version = "0.1.0"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eee1fe43e5fa4ea0886f250fc77c1afa32807750b735b7f2323c8c184541eda7"
+checksum = "c306face3479f85b27718a33448778a029a97452ffe1d48123ebb982e5ee47e9"
 dependencies = [
- "bitcoin 0.32.6",
+ "bitcoin",
  "bitcoin_hashes 0.16.0",
  "chacha20-poly1305",
  "secp256k1 0.29.1",
@@ -1053,7 +1035,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "209cf00e44b979682b22be38672317d8bb48dd5ea2726e61b762d6b14b5842f2"
 dependencies = [
- "bitcoin 0.32.6",
+ "bitcoin",
  "hex-conservative 0.2.1",
  "log",
  "minreq",
@@ -2255,7 +2237,9 @@ dependencies = [
 
 [[package]]
 name = "maverick_os"
-version = "0.1.5"
+version = "0.1.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67c009fba99276a9f946b80b4b6e350c04be14f55a2fd75bdac0f7b411e84e6e"
 dependencies = [
  "air",
  "android-activity",
@@ -2266,9 +2250,9 @@ dependencies = [
  "dispatch2",
  "downcast-rs 2.0.1",
  "env_logger",
- "getrandom 0.2.16",
  "hex",
  "image 0.25.6",
+ "imageproc",
  "jni",
  "libc",
  "log",
@@ -2276,11 +2260,13 @@ dependencies = [
  "objc2 0.6.1",
  "objc2-app-kit 0.3.1",
  "objc2-av-foundation",
+ "objc2-core-graphics",
  "objc2-core-media",
  "objc2-core-video",
  "objc2-foundation 0.3.1",
  "objc2-ui-kit 0.3.1",
  "objc2-user-notifications 0.3.1",
+ "rand 0.9.1",
  "raw-window-handle",
  "rusqlite",
  "serde",
@@ -2324,21 +2310,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "messages"
-version = "0.1.0"
-dependencies = [
- "bitcoin 0.1.0",
- "chrono",
- "maverick_os",
- "pelican_ui",
- "pelican_ui_std",
- "profiles",
- "serde",
- "serde_json",
- "uuid",
-]
-
-[[package]]
 name = "metal"
 version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2372,7 +2343,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0760e92feaf4ee26bd2e616f557de64712bf1e75f3b1b218dfb475c0a84c7943"
 dependencies = [
  "bech32",
- "bitcoin 0.32.6",
+ "bitcoin",
  "serde",
 ]
 
@@ -2405,14 +2376,13 @@ dependencies = [
 name = "minty"
 version = "0.1.0"
 dependencies = [
- "bitcoin 0.1.0",
  "chrono",
  "include_dir",
- "maverick_os",
- "messages",
  "pelican_ui",
  "pelican_ui_std",
  "profiles",
+ "ramp-bitcoin",
+ "ramp-messages",
  "serde",
  "serde_json",
  "tempfile",
@@ -2912,10 +2882,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "989c6c68c13021b5c2d6b71456ebb0f9dc78d752e86a98da7c716f4f9470f5a4"
 dependencies = [
  "bitflags 2.9.0",
+ "block2 0.6.1",
  "dispatch2",
+ "libc",
  "objc2 0.6.1",
  "objc2-core-foundation",
  "objc2-io-surface",
+ "objc2-metal 0.3.1",
 ]
 
 [[package]]
@@ -3320,7 +3293,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pelican_ui"
-version = "0.1.5"
+version = "1.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f13f1dc682d1a178724555c6e28342122cd72fc0e71fe90121e01a853893611"
 dependencies = [
  "downcast-rs 2.0.1",
  "image 0.25.6",
@@ -3334,7 +3309,9 @@ dependencies = [
 
 [[package]]
 name = "pelican_ui_proc"
-version = "0.1.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4b7653eee7e4a68f7b7d1e239771e2f094f4f07dab025736369b8c6490e6eab"
 dependencies = [
  "proc-macro2 1.0.95",
  "quote 1.0.40",
@@ -3343,7 +3320,9 @@ dependencies = [
 
 [[package]]
 name = "pelican_ui_std"
-version = "0.1.2"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00a0d7007366ce315f4d9c6a0700a668636772eb8cb30f4ba286dd1f1927c790"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -3353,6 +3332,7 @@ dependencies = [
  "image 0.25.6",
  "imageproc",
  "pelican_ui",
+ "png 0.18.0",
  "qrc",
  "qrcode 0.14.1",
  "quircs",
@@ -3433,6 +3413,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82151a2fc869e011c153adc57cf2789ccb8d9906ce52c0b39a6b5697749d7526"
 dependencies = [
  "bitflags 1.3.2",
+ "crc32fast",
+ "fdeflate",
+ "flate2",
+ "miniz_oxide",
+]
+
+[[package]]
+name = "png"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97baced388464909d42d89643fe4361939af9b7ce7a31ee32a168f832a70f2a0"
+dependencies = [
+ "bitflags 2.9.0",
  "crc32fast",
  "fdeflate",
  "flate2",
@@ -3528,7 +3521,9 @@ dependencies = [
 
 [[package]]
 name = "profiles"
-version = "0.1.1"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f436ad0c0464331796eaeac669830b4eafafb360001e89954cc88c0c1c0e5b2"
 dependencies = [
  "image 0.25.6",
  "log",
@@ -3642,6 +3637,44 @@ name = "r-efi"
 version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74765f6d916ee2faa39bc8e68e4f3ed8949b48cccdac59983d287a7cb71ce9c5"
+
+[[package]]
+name = "ramp-bitcoin"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80b50947419f549a5a458bc6c64fb807d66e3052e94ce86b9df7d6dc0af30bf9"
+dependencies = [
+ "bdk_esplora",
+ "bdk_wallet",
+ "chrono",
+ "image 0.25.6",
+ "imageproc",
+ "pelican_ui",
+ "pelican_ui_std",
+ "qrcode 0.14.1",
+ "quircs",
+ "reqwest",
+ "secp256k1 0.31.0",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "ramp-messages"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fad2bbc06026f8ccf07f5707dd1c555da2f5fa4322689d83457e63cba751609d"
+dependencies = [
+ "chrono",
+ "maverick_os",
+ "pelican_ui",
+ "pelican_ui_std",
+ "profiles",
+ "serde",
+ "serde_json",
+ "uuid",
+]
 
 [[package]]
 name = "rand"
@@ -5381,7 +5414,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu_canvas"
-version = "4.0.6"
+version = "4.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1c1fba5eda6b0fe9af105f63fccad62eca0bed18c11cca42cbf1a0bc7e1c735"
 dependencies = [
  "bytemuck",
  "fast_image_resize",

@@ -41,13 +41,12 @@ impl SelectContract {
         let multiple = prediction / BITCOIN_PRICE;
         let text = ExpandableText::new(ctx, &format!("I will deposit {}", format_usd(deposit)), TextStyle::Heading, text_size, Align::Center, None);
         let is_risky = ctx.state().get_mut_or_default::<MintyContract>().is_risky;
+        
         let selector = match is_risky {
             true => ListItemSelector::new(ctx,
-                ("285% Additonal Return", &format!("If Bitcoin is worth {} in 5 years, I will withdraw {}.", format_usd(prediction), format_usd((multiple*0.85)*deposit)), Some(&format!("If Bitcoin is below {}, I will absorb the loss so the counterparty can withdraw at a price of {}", format_usd(BITCOIN_PRICE*2.0), format_usd(BITCOIN_PRICE*2.0)))),
-                ("270% Additonal Return", &format!("If Bitcoin is worth {} in 5 years, I will withdraw {}.", format_usd(prediction), format_usd((multiple*0.7)*deposit)), Some(&format!("If Bitcoin is below {}, I will absorb the loss so the counterparty can withdraw at a price of {}", format_usd(BITCOIN_PRICE), format_usd(BITCOIN_PRICE)))),
-                Some(("30% Additonal Return", &format!("If Bitcoin is worth {} in 5 years, I will withdraw {}.", format_usd(prediction), format_usd((multiple*0.3)*deposit)), Some(&format!("If Bitcoin is below {}, I will absorb the loss so the counterparty can withdraw at a price of {}", format_usd(BITCOIN_PRICE/2.0), format_usd(BITCOIN_PRICE/2.0))))),
-                // ("Today's Price Guaranteed", &format!("If Bitcoin is {}, I will withdraw {}\nIf Bitcoin is below {}, I will withdraw {}", format_usd(prediction), format_usd((multiple*0.3)*deposit), format_usd(BITCOIN_PRICE), format_usd(deposit)), None), // your deposit
-                // Some(("50% of Today's Price Guaranteed", &format!("If Bitcoin is {}, I will withdraw {}\nIf Bitcoin is below {}, I will withdraw {}", format_usd(prediction), format_usd((multiple*0.7)*deposit), format_usd(BITCOIN_PRICE/2.0), format_usd(deposit/2.0)), None)),
+                ("100% Of Counterparty's Return", "You receive all of the price appreciation of your counterparty's Bitcoin after their guaranteed 15% annual return.", None),
+                ("75% Of Counterparty's Return", "You receive 75% of the price appreciation of your counterparty's Bitcoin and protect them from a price drop.", None),
+                Some(("35% Of Counterparty's Return", "You receive 35% of the price appreciation of your counterparty's Bitcoin and protect them from more than a 50% price drop.", None)),
                 None
             ),
             false => ListItemSelector::new(ctx,
@@ -60,7 +59,7 @@ impl SelectContract {
 
         let button = Button::primary(ctx, "Continue", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(1)));
         let bumper = Bumper::single_button(ctx, button);
-        let content = Content::new(Offset::Start, vec![Box::new(text), Box::new(selector)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(text), Box::new(selector)]);
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Select Contract", None);
         SelectContract(Stack::default(), Page::new(Some(header), content, Some(bumper)))
@@ -73,9 +72,9 @@ impl OnEvent for SelectContract {
             let selector = self.1.content().find::<ListItemSelector>().unwrap();
             let contract = ctx.state().get_mut::<MintyContract>().expect("NO CONTRACT");
             match selector.index() {
-                Some(0) if contract.is_risky => contract.variant = ContractType::AdditonalReturn285,
-                Some(1) if contract.is_risky => contract.variant = ContractType::AdditonalReturn270,
-                Some(2) if contract.is_risky => contract.variant = ContractType::AdditonalReturn30,
+                Some(0) if contract.is_risky => contract.variant = ContractType::OfCounterpartyReturn100,
+                Some(1) if contract.is_risky => contract.variant = ContractType::OfCounterpartyReturn75,
+                Some(2) if contract.is_risky => contract.variant = ContractType::OfCounterpartyReturn35,
                 Some(0) => contract.variant = ContractType::GuaranteedReturn15,
                 Some(1) => contract.variant = ContractType::TodaysPriceGuaranteed,
                 Some(2) => contract.variant = ContractType::TodaysPriceGuaranteed50,

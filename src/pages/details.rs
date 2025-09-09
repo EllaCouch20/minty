@@ -34,9 +34,9 @@ impl ContractDetails {
         let contract = ctx.state().get_or_default::<MintyContract>().clone();
         let details = DataItemMinty::contract_details(ctx, &contract);
 
-        let done = Button::secondary_expand(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0))); 
+        let done = Button::close(ctx, "Done", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0))); 
         let bumper = Bumper::single_button(ctx, done);
-        let content = Content::new(Offset::Start, vec![Box::new(details)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(details)]);
 
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Contract details", None);

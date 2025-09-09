@@ -45,7 +45,7 @@ impl RedepositAddress {
         let paste = Button::secondary(ctx, Some("paste"), "Paste Clipboard", None, move |ctx: &mut Context| {
             let data = ctx.hardware.paste();
             ctx.trigger_event(SetActiveInput(data))
-        }, Some("Pasted Clipboard".to_string()));
+        }, Some("Pasted Clipboard"));
 
         let scan_qr = Button::secondary(ctx, Some("qr_code"), "Scan QR Code", None, |ctx: &mut Context| ctx.trigger_event(NavigateEvent(2)), None);
         // let contact = Button::secondary(ctx, Some("profile"), "Select Contact", None, |ctx: &mut Context| ctx.trigger_event(NavigateEvent(3)), None);
@@ -55,7 +55,7 @@ impl RedepositAddress {
 
         let header = Header::stack(ctx, Some(back), "Send bitcoin", None);
         let bumper = Bumper::single_button(ctx, button);
-        let content = Content::new(Offset::Start, vec![Box::new(input), Box::new(quick_actions)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(input), Box::new(quick_actions)]);
 
         RedepositAddress(Stack::default(), Page::new(Some(header), content, Some(bumper)), ButtonState::Default)
     }

@@ -45,7 +45,7 @@ impl BitcoinDeposit {
         let numeric_keypad = NumericKeypad::new(ctx);
         let mut content: Vec<Box<dyn Drawable>> = vec![Box::new(amount_display)];
         IS_MOBILE.then(|| content.push(Box::new(numeric_keypad)));
-        let content = Content::new(Offset::Center, content);
+        let content = Content::new(ctx, Offset::Center, content);
 
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Bitcoin deposit", None);

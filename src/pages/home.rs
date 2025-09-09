@@ -81,7 +81,7 @@ impl MintyHome {
         });
 
         let bumper = Bumper::double_button(ctx, reduced, added);
-        let content = Content::new(offset, content);
+        let content = Content::new(ctx, offset, content);
         let header = Header::home(ctx, "Minty", None);
         MintyHome(Stack::default(), Page::new(Some(header), content, Some(bumper)), None)
     }

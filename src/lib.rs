@@ -8,11 +8,10 @@ use profiles::plugin::ProfilePlugin;
 use profiles::service::{Name, ProfileService};
 use profiles::components::AvatarContentProfiles;
 use pelican_ui::ColorResources;
-use pelican_ui::theme::{IllustrationColors, ButtonColorScheme, ButtonColors, BrandColor, TextColor, OutlineColor, BackgroundColor, ShadesColor, StatusColor};
+use pelican_ui::{IllustrationColors, ButtonColorScheme, ButtonColors, BrandColor, TextColor, OutlineColor, BackgroundColor, StatusColor};
 use std::collections::HashMap;
+use pelican_ui::hardware::ApplicationSupport;
 // use messages::service::{Rooms};
-
-use maverick_os::ApplicationSupport;
 
 // use serde::{Deserialize, Serialize};
 use std::{
@@ -21,6 +20,7 @@ use std::{
     io::{BufReader, Write},
     path::Path,
 };
+
 use tempfile::NamedTempFile;
 
 pub mod pages;
@@ -158,7 +158,6 @@ impl App {
                 primary: Color::from_hex("6DD495", 255),
                 secondary: Color::from_hex("FFFFFF", 255),
             },
-            ShadesColor::default(),
             ButtonColors {
                 primary_default: ButtonColorScheme {
                     background: Color::from_hex("42DD94", 255),

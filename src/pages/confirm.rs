@@ -79,7 +79,7 @@ impl ConfirmContract {
         // let text = ExpandableText::new(ctx, "You withdraw $385,000.00", TextStyle::Heading, text_size, Align::Center, None);
         let button = Button::primary(ctx, "Confirm", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(3)));
         let bumper = Bumper::single_button(ctx, button);
-        let content = Content::new(Offset::Start, vec![Box::new(confirm_prediction), Box::new(contract_terms)]);
+        let content = Content::new(ctx, Offset::Start, vec![Box::new(confirm_prediction), Box::new(contract_terms)]);
         let back = IconButton::navigation(ctx, "left", |ctx: &mut Context| ctx.trigger_event(NavigateEvent(0)));
         let header = Header::stack(ctx, Some(back), "Confirm contract", None);
         ConfirmContract(Stack::default(), Page::new(Some(header), content, Some(bumper)), match_found)

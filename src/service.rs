@@ -1,8 +1,7 @@
 // use std::collections::BTreeMap;
 // use std::sync::LazyLock;
 use std::time::Duration;
-
-use maverick_os::Cache;
+use pelican_ui::hardware::Cache;
 use pelican_ui::runtime::{Services, Service, ServiceList, ThreadContext, async_trait, self};
 use pelican_ui::{hardware};
 use pelican_ui::State;

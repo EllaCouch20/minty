@@ -25,37 +25,40 @@ impl DataItemMinty {
         let edit_prediction = to_edit_prediction.map(|i| vec![
             Button::secondary(ctx, Some("edit"), "Edit Prediciton", None, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(i)), None)
         ]);
+
+        let contract = ctx.state().get_or_default::<MintyContract>().clone();
+        let cvals = MintyContractValues::get(ctx, contract.variant);
         
-        let contract = ctx.state().get::<MintyContract>().expect("No contract");
-        let multiple = contract.prediction / BITCOIN_PRICE;
         let subtitle = match is_risky {
             true => {
-                match contract.variant {
-                    ContractType::AdditonalReturn285 => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.85)*contract.deposited))
-                    },
-                    ContractType::AdditonalReturn270 => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.7)*contract.deposited))
-                    },
-                    ContractType::AdditonalReturn30 => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.3)*contract.deposited))
-                    },
-                    _ => "".to_string(),
-                }
+                // match contract.variant {
+                //     ContractType::AdditonalReturn285 => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(add_return_withdraw))
+                //     },
+                //     ContractType::AdditonalReturn270 => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(add_return_withdraw))
+                //     },
+                //     ContractType::AdditonalReturn30 => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(add_return_withdraw))
+                //     },
+                //     _ => "".to_string(),
+                // }
+                format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(cvals.add_return_withdraw))
             },
             false => {
-                match contract.variant {
-                    ContractType::GuaranteedReturn15 => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(contract.deposited*2.0))
-                    },
-                    ContractType::TodaysPriceGuaranteed => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.3)*contract.deposited))
-                    },
-                    ContractType::TodaysPriceGuaranteed50 => {
-                        format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.7)*contract.deposited))
-                    },
-                    _ => "".to_string(),
-                }
+                // match contract.variant {
+                //     ContractType::GuaranteedReturn15 => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(contract.deposited*2.0))
+                //     },
+                //     ContractType::TodaysPriceGuaranteed => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.3)*contract.deposited))
+                //     },
+                //     ContractType::TodaysPriceGuaranteed50 => {
+                //         format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd((multiple*0.7)*contract.deposited))
+                //     },
+                //     _ => "".to_string(),
+                // }
+                format!("I will deposit {} now and withdraw {} in 5 years.", format_usd(contract.deposited), format_usd(cvals.reduced_risk_withdraw))
             }
         };
 
@@ -68,18 +71,47 @@ impl DataItemMinty {
             Button::secondary(ctx, Some("edit"), "Edit Deposit", None, move |ctx: &mut Context| ctx.trigger_event(NavigateEvent(b)), None)
         ]);
 
-        let contract = ctx.state().get::<MintyContract>().expect("No contract");
+        
+        let contract = ctx.state().get_or_default::<MintyContract>().clone();
+        let cvals = MintyContractValues::get(ctx, contract.variant);
 
         let details = match is_risky {
             true => {
                 match contract.variant {
-                    // ContractType::AdditonalReturn285 => {
-                    //     let a = format!("Today, I will deposit {:.8} BTC", deposit / BITCOIN_PRICE);
-                    //     let b = format!("In 5 years, if Bitcoin is above {}, I will withdraw {} minus {} worth of Bitcoin.", 
-                    //         format_usd(BITCOIN_PRICE/3.0), format_usd(contract.prediction), format_usd(contract.prediction), 
-                    //     );
-                    //     format!("{a}\n\n{b}\n\n{c}")
-                    // },
+                    ContractType::OfCounterpartyReturn100 => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is above {} I will withdraw {} and 100% of the counterparty's price appreciation after 15% per year.", 
+                            format_usd(BITCOIN_PRICE*2.0), cvals.contract_after_fees / BITCOIN_PRICE 
+                        );
+                        let c = format!("In 5 years, if Bitcoin is below {} my counterparty will withdraw {} from the {:.8} BTC and I will withdraw the remaining Bitcoin.", 
+                            format_usd(BITCOIN_PRICE*2.0), format_usd(contract.deposited * 2.0), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        let d = format!("In 5 years, if Bitcoin is below {} I will withdraw nothing.", format_usd(cvals.collateral_runs_out));
+                        format!("{a}\n\n{b}\n\n{c}\n\n{d}")
+                    },
+                    ContractType::OfCounterpartyReturn75 => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is above {} I will withdraw {:.8} BTC and 75% of the counterparty's price appreciation.", 
+                            format_usd(BITCOIN_PRICE), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        let c = format!("In 5 years, if Bitcoin is below {} my counterparty will withdraw {} from the {:.8} BTC and I will withdraw the remaining Bitcoin.", 
+                            format_usd(BITCOIN_PRICE), format_usd(BITCOIN_PRICE), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        format!("{a}\n\n{b}\n\n{c}")
+                    },
+                    ContractType::OfCounterpartyReturn35 => {
+                        let a = format!("Today, I will deposit {:.8} BTC", contract.deposited / BITCOIN_PRICE);
+                        let b = format!("In 5 years, if Bitcoin is above {:.8} I will withdraw {}.", 
+                            format_usd(BITCOIN_PRICE), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        let c = format!("In 5 years, if Bitcoin is between {} and {}, I will withdraw {:.8}.", 
+                            format_usd(BITCOIN_PRICE/2.0), format_usd(BITCOIN_PRICE), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        let d = format!("In 5 years, if Bitcoin is below {}, my counterparty will withdraw {} from the {:.8} and I will withdraw the remaining Bitcoin.", 
+                            format_usd(BITCOIN_PRICE/2.0), format_usd(BITCOIN_PRICE/2.0), cvals.contract_after_fees / BITCOIN_PRICE
+                        );
+                        format!("{a}\n\n{b}\n\n{c}")
+                    },
                     _ => "".to_string(),
                 }
             },
@@ -175,4 +207,134 @@ impl TextInputMinty {
             TextInput::NO_ICON, false
         )
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct MintyContractValues {
+    pub reduced_risk_deposit: f64,
+    pub guaranteed_withdraw: f64,
+    pub total_deposit: f64,
+    pub fee: f64,
+    pub contract_after_fees: f64,
+    pub rr_investment_start: Option<f64>,
+    pub rr_investment_end: Option<f64>,
+    pub rr_return: Option<f64>,
+    pub collateral_runs_out: f64,
+    pub reduced_risk_withdraw: f64,
+    pub add_return_withdraw: f64
+}
+
+impl MintyContractValues {
+    pub fn get(ctx: &mut Context, variant: ContractType) -> Self {
+        let contract = ctx.state().get::<MintyContract>().expect("No contract");
+        let return_percent = 0.25;
+
+        match variant {
+            ContractType::OfCounterpartyReturn100 => {
+                let reduced_risk_deposit = contract.deposited / 2.0;
+                println!("reduced_risk_deposit: {:?}", reduced_risk_deposit);
+
+                let guaranteed_withdraw = reduced_risk_deposit * 2.0;
+                println!("guaranteed_withdraw: {:?}", guaranteed_withdraw);
+
+                let total_deposit = contract.deposited + reduced_risk_deposit;
+                println!("total_deposit: {:?}", total_deposit);
+
+                let fee = total_deposit * 0.05;
+                println!("fee: {:?}", fee);
+
+                let contract_after_fees = total_deposit - fee;
+                println!("contract_after_fees: {:?}", contract_after_fees);
+
+                let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+                println!("collateral_runs_out: {:?}", collateral_runs_out);
+
+                let reduced_risk_withdraw = if contract.prediction > guaranteed_withdraw {
+                    guaranteed_withdraw
+                } else {
+                    contract_after_fees * contract.prediction
+                };
+                println!("reduced_risk_withdraw: {:?}", reduced_risk_withdraw);
+
+                let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
+                println!("add_return_withdraw (CALCULATED TOTAL): {:?}", add_return_withdraw);
+
+                MintyContractValues { 
+                    reduced_risk_deposit, guaranteed_withdraw, total_deposit, fee, contract_after_fees, 
+                    rr_investment_start: None, rr_investment_end: None, rr_return: None, collateral_runs_out, 
+                    reduced_risk_withdraw, add_return_withdraw
+                }
+            }
+
+            ContractType::OfCounterpartyReturn75 => {
+                let reduced_risk_deposit = contract.deposited / 2.0;
+                let guaranteed_withdraw = reduced_risk_deposit;
+                let total_deposit = contract.deposited + reduced_risk_deposit;
+                let fee = total_deposit * 0.05;
+                let contract_after_fees = total_deposit - fee;
+                let return_percent = 0.25;
+                let rr_investment_start = Some(reduced_risk_deposit);
+                let rr_investment_end = Some(rr_investment_start.unwrap() * contract.prediction);
+                let rr_return = Some((rr_investment_end.unwrap() - rr_investment_start.unwrap()) * return_percent);
+                let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+                let reduced_risk_withdraw = if contract.prediction > BITCOIN_PRICE {rr_return.unwrap()+reduced_risk_deposit} else {contract_after_fees*contract.prediction};
+                let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
+                MintyContractValues { reduced_risk_deposit, guaranteed_withdraw, total_deposit, fee, contract_after_fees, rr_investment_start, rr_investment_end, rr_return, collateral_runs_out, reduced_risk_withdraw, add_return_withdraw}
+            },
+            ContractType::OfCounterpartyReturn35 => {
+                let reduced_risk_deposit = contract.deposited / 2.0;
+                let guaranteed_withdraw = reduced_risk_deposit / 2.0;
+                let total_deposit = contract.deposited + reduced_risk_deposit;
+                let fee = total_deposit * 0.05;
+                let contract_after_fees = total_deposit - fee;
+                let return_percent = 0.25;
+                let rr_investment_start = Some(reduced_risk_deposit);
+                let rr_investment_end = Some(rr_investment_start.unwrap() * contract.prediction);
+                let rr_return = Some((rr_investment_end.unwrap() - rr_investment_start.unwrap()) * return_percent);
+                let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+                let reduced_risk_withdraw = if contract.prediction > BITCOIN_PRICE / 2.0 {rr_return.unwrap()+reduced_risk_deposit} else {contract_after_fees*contract.prediction};
+                let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
+                MintyContractValues { reduced_risk_deposit, guaranteed_withdraw, total_deposit, fee, contract_after_fees, rr_investment_start, rr_investment_end, rr_return, collateral_runs_out, reduced_risk_withdraw, add_return_withdraw}
+            },
+            _ => MintyContractValues::default()
+        }
+    }
+
+        // // 100% of counterparty's return
+        // let reduced_risk_deposit = contract.deposited / 2.0;
+        // let guaranteed_withdraw = reduced_risk_deposit * 2.0;
+        // let total_deposit = contract.deposited + reduced_risk_deposit;
+        // let fee = total_deposit * 0.05;
+        // let contract_after_fees = total_deposit - fee;
+        // let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+        // let reduced_risk_withdraw = if collateral_runs_out {contract_after_fees * contract.prediction} else {guaranteed_withdraw};
+        // let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
+
+        // // 75% of counterparty's return
+        // let reduced_risk_deposit = contract.deposited / 2.0;
+        // let guaranteed_withdraw = reduced_risk_deposit;
+        // let total_deposit = contract.deposited + reduced_risk_deposit;
+        // let fee = total_deposit * 0.05;
+        // let contract_after_fees = total_deposit - fee;
+        // let return_percent = 0.25;
+        // let rr_investment_start = reduced_risk_deposit;
+        // let rr_investment_end = rr_investment_start * contract.prediction;
+        // let rr_return = (rr_investment_end - rr_investment_start) * return_percent;
+        // let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+        // let reduced_risk_withdraw = if BITCOIN_PRICE > contract.prediction {rr_return+reduced_risk_deposit} else {contract_after_fees*contract.prediction};
+        // let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
+
+        // // 35% of counterparty's return
+        // let reduced_risk_deposit = contract.deposited / 2.0;
+        // let guaranteed_withdraw = reduced_risk_deposit / 2.0;
+        // let total_deposit = contract.deposited + reduced_risk_deposit;
+        // let fee = total_deposit * 0.05;
+        // let contract_after_fees = total_deposit - fee;
+        // let return_percent = 0.25;
+        // let rr_investment_start = reduced_risk_deposit;
+        // let rr_investment_end = rr_investment_start * contract.prediction;
+        // let rr_return = (rr_investment_end - rr_investment_start) * return_percent;
+        // let collateral_runs_out = guaranteed_withdraw / contract_after_fees;
+        // let reduced_risk_withdraw = if contract.prediction > BITCOIN_PRICE / 2.0 {rr_return+reduced_risk_deposit} else {contract_after_fees*contract.prediction};
+        // let add_return_withdraw = contract_after_fees - reduced_risk_withdraw;
 }
